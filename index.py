@@ -1,4 +1,7 @@
+from flask import Flask, render_template, request
 import ollama
+
+app = Flask(__name__)
 
 def generate_story_with_llama(girl_name, boy_name, romance_level):
     prompt = f"Create a {romance_level} romantic story where the main characters are {girl_name} and {boy_name}. The story should focus on their intense attraction, chemistry, and growing desire. It should include moments of deep connection, longing gazes, and the electric tension between them during their first meeting."
@@ -6,10 +9,15 @@ def generate_story_with_llama(girl_name, boy_name, romance_level):
     story = response.get('message', {}).get('content', 'No content available')
     return story
 
-girl_name = input("Enter the girl's name: ")
-boy_name = input("Enter the boy's name: ")
-romance_level = input("Enter the romance level (Low, Medium, High): ")
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    story = None
+    if request.method == 'POST':
+        girl_name = request.form['girl_name']
+        boy_name = request.form['boy_name']
+        romance_level = request.form['romance_level']
+        story = generate_story_with_llama(girl_name, boy_name, romance_level)
+    return render_template('index.html', story=story)
 
-story = generate_story_with_llama(girl_name, boy_name, romance_level)
-print("\nHere is your generated story:\n")
-print(story)
+if __name__ == '__main__':
+    app.run(debug=True)
